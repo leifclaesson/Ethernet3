@@ -24,11 +24,39 @@ W5500Class w5500;
 SPISettings wiznet_SPI_settings(8000000, MSBFIRST, SPI_MODE0);
 uint8_t SPI_CS;
 
+uint32_t preinit_delay_timestamp=0;
+
+void W5500Class::pre_init(uint32_t init_delay_ms)
+{
+	preinit_delay_timestamp=millis()+init_delay_ms;
+	if(!preinit_delay_timestamp) preinit_delay_timestamp++;
+}
+
+bool W5500Class::ready_to_init()
+{
+	if(!preinit_delay_timestamp) return false;
+	return (int32_t) (preinit_delay_timestamp-millis())<=0;
+}
+
 void W5500Class::init(uint8_t socketNumbers, uint8_t ss_pin)
 {
   SPI_CS = ss_pin;
 
-  delay(1000);
+  if(preinit_delay_timestamp)
+  {
+	  int32_t diff=preinit_delay_timestamp-millis();
+
+	  if(diff>0)
+	  {
+//		  Serial.printf("delaying %i\n",diff);
+		  delay(diff);
+	  }
+	  preinit_delay_timestamp=0;
+  }
+  else
+  {
+	  delay(1000);
+  }
   initSS();
   SPI.begin();
 

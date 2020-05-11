@@ -131,6 +131,8 @@ public:
 class W5500Class {
 
 public:
+  void pre_init(uint32_t init_delay_ms);
+  bool ready_to_init();
   void init(uint8_t socketNumbers, uint8_t ss_pin = 10);
   static uint8_t softReset(void);
   uint8_t readVersion(void);
